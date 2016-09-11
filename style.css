@@ -1,0 +1,137 @@
+
+/** TABLES **/
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+thead {
+    font-weight: bold;
+    background: #f4f4f4;
+}
+tr {
+    border-bottom: solid 0.1em #e0e0e0;
+    border-radius: 0.1em;
+}
+td, th {
+   padding: 0.5em; 
+}
+/** CODE **/
+pre, code {
+    font-size: 1.2em;
+    font-family: monospace; 
+}
+code {
+    background: #f4f4f4;
+    color: #9097C0;
+}
+pre code {
+    font-size: 1em;
+    line-height: 1.4em;
+    color: #333333;
+    background: #f4f4f4;
+    border: solid 0.1em #e0e0e0;
+    border-radius: 0.1em;
+    
+    padding: 1em;
+    display: block;
+    width: 95%;
+    
+    white-space: pre-wrap;   
+    white-space: -moz-pre-wrap;  
+    white-space: -pre-wrap;      
+    white-space: -o-pre-wrap;    
+    word-wrap: break-word;       
+}
+.source {
+    font-size: 1.2em;
+    font-family: monospace;
+}
+ul {
+    line-height: 1.4em;
+}
+* {
+    font-family: sans-serif;
+    color: #333333;
+}
+p {
+    line-height: 1.5em;
+}
+body {
+    margin-left: 10vw;
+    margin-right: 10vw;
+    margin-top: 5vw;
+}
+h1, h2, h3, h4, h5, h6 {
+    color: #9097C0;
+}
+h1.top-bar {
+    font-size: 2em;    
+    display: inline-block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+a {
+    color: #9097C0;
+    text-decoration: none;
+    display: inline;
+}
+a.top-bar {
+    font-size: 1.2em;
+    float: right;
+    margin-left: 1em;
+    margin-top: 1.5em;
+}
+a:hover {
+    color: #B0B7F0;
+    cursor: grab;
+}
+hr {
+    border: solid 0.1em #e0e0e0;
+    border-radius: 0.1em;
+}
+textarea {
+    font-size: 1em;
+    line-height: 1.4em;
+    font-family: monospace; 
+    
+    color: #333333;
+    background: #f4f4f4;
+    border: solid 0.1em #e0e0e0;
+    border-radius: 0.1em;
+    
+    resize: none;
+    width: 90%;
+    height: 95%;
+    display: block;
+
+    padding: 1em 1em;
+    margin-left: auto;
+    margin-right: auto;
+    
+    overflow: auto;
+    outline: none;
+    
+    -moz-tab-size : 4;
+    -o-tab-size : 4;
+    tab-size : 4;
+}
+div.editor {
+    margin: 0;
+    padding: 0;
+    width: 50%;
+    height: 50%;
+    float: left;
+}
+div#render {
+    overflow: auto;
+    width: 92%;
+    margin: auto;
+    padding: 1em;
+    height: 30%;
+    clear: both;
+    
+    border: solid 0.1em #e0e0e0;
+    border-radius: 0.1em;
+
+}

@@ -1,0 +1,133 @@
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>HTMLmini</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>
+        <h1 class='top-bar'>HTMLmini</h1>
+        <a  class='top-bar' href=''>github</a>
+        <a  class='top-bar' href=''>author</a>
+        <hr>
+        <br>
+        <div class="editor">
+            <textarea spellcheck="false" id="code">
+# I'm a comment, no one notices me!
+# This region contains the MINIhtml source
+# The region on the right contains the compiled HTML 
+# The region below previews that HTML
+
+h2|HTMLmini Sandbox
+hr
+p
+	' Welcome to the HTMLmini sandbox!'
+	' HTML mini is a concise language that expands into HTML.'
+	' It is inspired by the likes of '
+	a[href'http://docs.emmet.io/']|emmet
+	' and '
+	a[href'http://haml.info/']|haml
+	' but focuses on preserving the HTML format while still'
+	' reducing the number of characters you have to type.'
+	' MINIhtml doesn\'t offer any crazy preprocessing options,'
+	' just a simple one-to-one translation to HTML.'
+p
+pre
+	code|'
+<!--HTMLmini suppoerts all the basics-->
+<div><p>Including escaping HTML!</p></div>
+'
+p
+	'Why is HTMLmini awesome?'
+	ul
+		li|'It\'s lightweight'
+		li|'It still looks like the HTML it creates'
+		li|'It\'ll hyou a whole lot of key strokes'
+h3|Quick Reference
+table
+	thead
+		tr
+			th|Description
+			th|Source
+			th|Output
+	tbody
+		tr
+			td|Create a new element
+			td.source|'div'
+			td.source|'<div></div>'
+		tr
+			td|Setting ids
+			td.source|'#my-id'
+			td|'<div id="my-id"></div>'
+		tr
+			td|Setting classes
+			td.source|'.class1.class2'
+			td|'<div class="class1 class2"></div>'
+		tr
+			td|Setting attributes
+			td.source|'[type\'my-type\'disabled]'
+			td.source|'<div type="my-type" disabled></div>'
+		tr
+			td|Setting text
+			td.source|'p|Hello World'
+			td.source|'<p>Hello World</p>'
+		tr
+			td|Settign text with a string
+			td.source|'"All the characters!@#$%"'
+			td.source|'All the characters&#33;&#64;&#35;&#36;&#37;'
+		</textarea>
+        </div>  
+        <div class="editor">
+            <textarea disabled id="html"></textarea>
+        </div>   
+        <div id="render"></div>
+        <!-- HTMLmini source -->
+        <script src="js/src/api.js"></script>
+        <script src="js/src/Lexer.js"></script>
+        <script src="js/src/Parser.js"></script>
+        <script src="js/src/Generator.js"></script>
+        <script src="js/src/Compiler.js"></script>
+        <!--
+        <script src="HTMLmini.min.js"></script>
+        -->
+        <!-- HTMLmini tests -->
+        <script src="js/tests/test.js"></script>
+        <script src="js/tests/LexerTests.js"></script>
+        <script src="js/tests/ParserTests.js"></script>
+        <script>
+            HTMLmini();
+            
+            var render = document.getElementById( 'render' );
+            var code   = document.getElementById( 'code'   );
+            var html   = document.getElementById( 'html'   );
+            var update = '';
+
+            code.onkeydown = function(e) {
+                if(event.which == 9 || event.keyCode == 9) {
+                    var start = this.selectionStart;
+                    e.preventDefault();
+                    this.value = this.value.substring(0, this.selectionStart) + '\t' + this.value.substring(this.selectionEnd);
+                    this.selectionEnd = start + 1; 
+                    code.oninput();
+                }
+            }
+            code.oninput = function() {
+                if(update != code.value) {
+                    try {
+                        var nodes = HTMLmini.html(code.value, true);
+                        render.innerHTML = '';
+                        for(var i in nodes) {
+                            render.appendChild(nodes[i]);
+                        }
+                        html.value = HTMLmini.stringify(code.value);
+                    } catch(err) {
+                        html.value = err.message;
+                    }
+                    update = code.value;
+                }
+
+            }
+            code.oninput();
+        </script>
+    </body>
+</html>
