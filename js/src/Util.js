@@ -20,11 +20,15 @@ HTMLmini.print = function( arg ) {
  * @param char      char of source
  * @return          void
  */ 
-HTMLmini.Exception = function( name, message, line, char ) {
-    line = line || 'N/A';
-    char = char || 'N/A';
-    this.name    = name || '';
-    this.message = name + 'Exception: ' + message + '    ' + line + ':' + char;
+HTMLmini.Exception = function( name, message, line, char, stack ) {
+    if ( typeof line != 'undefined' && typeof char != 'undefined ') {
+        this.message = name + 'Exception: ' + message + '    ' + line + ':' + char;
+    } else {
+        this.message = name + 'Exception: ' + message;
+    }
+    this.stack   = stack || new Error().stack;
+    this.name    = name  || '';
+    this.name   += 'Exception';
 };
 /*
  * Filters Exception based off mode.
@@ -39,7 +43,7 @@ HTMLmini.Exception = function( name, message, line, char ) {
 HTMLmini.throw = function( name, message, line, char ) {
     if ( 
         !( name in HTMLmini.modes[HTMLmini.mode] ) && 
-        HTMLmini.modes[HTMLmini.mode].length > 0 
+        HTMLmini.mode != 'silent' 
     ) {
         throw new HTMLmini.Exception( name, message, line, char );
     }
@@ -57,7 +61,7 @@ HTMLmini.assert = function( a, b ) {
         b = b || true;
     }
     var details = {};
-    if ( !Htmlmini.equal( a, b, details ) ) {
+    if ( !HTMLmini.equal( a, b, details ) ) {
         throw new HTMLmini.Exception( 'Assert', details.a + ' ' + details.err + ' ' + details.b );
     }
 };
@@ -73,7 +77,8 @@ HTMLmini.assertException = function( name, callback ) {
     try {
         callback();
     } catch( err ) {
-        assert( name, err.name );
+        HTMLmini.assert( name, err.name );
+        return;
     }
     throw new HTMLmini.Exception( 'Assert', 'No exception thrown' );
 };
@@ -106,21 +111,23 @@ HTMLmini.equal = function( a, b, details ) {
         details.err = 'cannot be compared to';
         return false;
     }
-    var innerDetails = {};
-    for ( var i in a ) {
-        if ( !HTMLmini.equal( a[i], b[i], innerDetails ) ) {
-            details.a   = 'Object {}[' + i + '] : ' + innerDetails.a;
-            details.b   = 'Object {}[' + i + '] : ' + innerDetails.b;
-            details.err = 'does not equal';
-            return false;
+    if ( typeof a == 'object' && typeof b == 'object' ) {
+        var innerDetails = {};
+        for ( var i in a ) {
+            if ( !HTMLmini.equal( a[i], b[i], innerDetails ) ) {
+                details.a   = 'Object {}[' + i + '] : ' + innerDetails.a;
+                details.b   = 'Object {}[' + i + '] : ' + innerDetails.b;
+                details.err = 'does not equal';
+                return false;
+            }
         }
-    }
-    for ( var i in b ) {
-        if ( !HTMLmini.equal( a[i], b[i], innerDetails ) ) {
-            details.a   = 'Object {}[' + i + '] : ' + innerDetails.a;
-            details.b   = 'Object {}[' + i + '] : ' + innerDetails.b;
-            details.err = 'does not equal';
-            return false;
+        for ( var i in b ) {
+            if ( !HTMLmini.equal( a[i], b[i], innerDetails ) ) {
+                details.a   = 'Object {}[' + i + '] : ' + innerDetails.a;
+                details.b   = 'Object {}[' + i + '] : ' + innerDetails.b;
+                details.err = 'does not equal';
+                return false;
+            }
         }
     }
     return true;
@@ -132,7 +139,8 @@ HTMLmini.equal = function( a, b, details ) {
  * @return  string padding
  */
 HTMLmini.pad = function( n ) {
-    return Array( n ).join( ' ' );
+    n = n || 0;
+    return Array( n + 1 ).join( ' ' );
 };
 /*
  * Replaces HTML parsable characters with their literal counterparts.
@@ -187,7 +195,7 @@ HTMLmini.expandTabs = function( source, size ) {
         var adjust = line.startsWith( '\n' ) ? 1 : 0;
         for ( var i = 0; i < line.length; i++ ) {
             if ( line[i] == '\t' ) {
-                var indent = HTMLmini.pad( size - ( i % size ) + 1 );
+                var indent = HTMLmini.pad( size - ( ( i - adjust ) % size ) );
                 line = line.replace( '\t', indent );
             }
         }
@@ -205,7 +213,7 @@ HTMLmini.expandTabs = function( source, size ) {
  */
 HTMLmini.replaceKey = function( source, key, value ) {
     value  = value  || '';
-    source = source.replace( new RegExp( / *[^\\](\\\\)*:/.source + key, 'g' ), function( match ) {
+    source = source.replace( new RegExp( / *?([^\\]|^)(\\\\)*:/.source + key, 'g' ), function( match ) {
         var indent = HTMLmini.pad( match.search(/\S/) );
         return match.replace( ':' + key, value.replace( /\n/g, '\n' + indent ) );
     });

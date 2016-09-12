@@ -53,10 +53,10 @@ HTMLmini.aliases = {
     }
 };
 /*
- * Specify what Exceptions will terminate compilation for each mode. 
+ * Specify what Exceptions are consume. 
  */
 HTMLmini.modes = {
-    strict  : ['LexerException', 'ParserException', 'GeneratorException'],
-    relaxed : ['LexerException'],
+    strict  : [],
+    relaxed : ['ParserException'],
     silent  : []
 }
