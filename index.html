@@ -122,7 +122,7 @@ table
                         for(var i in nodes) {
                             render.appendChild(nodes[i]);
                         }
-                        html.value = HTMLmini.stringify(code.value, {});
+                        html.value = HTMLmini.stringify(code.value, {}, 4);
                     } catch(err) {
                         html.value = err.message;
                     }

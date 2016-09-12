@@ -35,7 +35,6 @@ HTMLmini.Parser = new function() {
         this.intext   = false;
         for(var i in tokens) {
             var token = tokens[i];
-            console.log( token.name );
             if ( !( token.name in this ) ) {
                 HTMLmini.throw( 'Parser', 'malformed token ' + token.name, token.line, token.char );
             }
