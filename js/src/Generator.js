@@ -1,128 +1,93 @@
 HTMLmini.Generator = new function() {
-
-    this.html = function(tree, array) {
-        if(array == undefined) {
-            array = false;
-        }
+    /*
+     * Generates HTML nodes.
+     * 
+     * @param tree  tree of Elements
+     * @param array if TRUE returns nodes as array, if FALSE returns first node (defaults to FALSE)
+     * @return      nodes or node
+     */
+    this.html = function( tree, array ) {
+        array = array || false;
         var nodes = [];
-        
-        for(var i in tree) {
+        for ( var i in tree ) {
             var element = tree[i];
-            var child = this.html(element.child, true);
-            
-            if(element.tag == undefined) {
-                nodes.push(document.createTextNode(element.text));
+            var child   = this.html( element.child, true );
+            if ( typeof element.tag == 'undefined' ) {
+                nodes.push( document.createTextNode( element.text ) );
                 continue;
             } else {
-                var node = document.createElement(element.tag);
+                var node = document.createElement( element.tag );
             }
-            if(element.id != undefined) {
-                node.setAttribute('id', element.id);
+            if ( typeof element.id != 'undefined' ) {
+                node.setAttribute( 'id', element.id );
             }
-            for(attr in element.attr) {
-                node.setAttribute(attr, element.attr[attr]);
+            for ( attr in element.attr ) {
+                node.setAttribute( attr, element.attr[attr] );
             }
-            if(element.class.length > 0) {
-                node.setAttribute('class', element.class.join(' '));
+            if ( element.class.length > 0 ) {
+                node.setAttribute( 'class', element.class.join(' ') );
             }
-            if(element.text != undefined) {
-                node.appendChild(document.createTextNode(element.text));
+            if( element.text != undefined ) {
+                node.appendChild( document.createTextNode( element.text ) );
             }
-            for(var j in child) {
-                node.appendChild(child[j]);
+            for ( var j in child ) {
+                node.appendChild( child[j] );
             }
-            nodes.push(node);
+            nodes.push( node );
         }
-        if (array) {
+        if ( array ) {
             return nodes;
         }
         return nodes.shift();
-    }
-    
-    this.stringify = function(tree) {
-        var buffer = '';
-        
-        for(var i in tree) {
+    };
+    /*
+     * Generates HTML source. If tabSize is zero no newlines will be inserted.
+     * 
+     * @param tree      tree of Elements
+     * @param tabSize   number of spaces in a tab (defaults to 0)
+     * @param tabNUm    starting number of tabs (defaults to 0)
+     */
+    this.stringify = function( tree, tabSize, tabNum ) {
+        tabSize = tabSize || 0;
+        tabNum  = tabNum  || 0;
+        var indent  = HTMLmini.pad( tabSize * tabNum );
+        var newline = tabSize > 0 ? '\n' : '';
+        var html = '';
+        for ( var i in tree ) {
             var element = tree[i];
-            var indent = this.indent(element.indent);
-            if(element.tag == undefined) {
-                buffer += indent + this.escape(element.text) + '\n';
-                continue;    
+            if ( typeof element.tag == 'undefined' ) {
+                html += indent+ HTMLmini.escapeHTML( element.text ) + newline;
+                continue;
             } else {
-                buffer += indent + '<' + element.tag;
+                html += indent + '<' + element.tag; 
             }
-            if(element.id != undefined) {
-                buffer += ' id="' + element.id + '"';
+            if ( typeof element.id != 'undefined' ) {
+                html += ' id="' + element.id + '"';
             }
-            for(attr in element.attr) {
-                buffer += ' ' + attr + (element.attr[attr].length > 0 ? ('="' + element.attr[attr] + '"') : '');
+            for ( attr in element.attr ) {
+                html += ' ' + attr + ( element.attr[attr] != '' ? ( '="' + element.attr[attr] + '"' ) : '' );
             }
-            if(element.class.length > 0) {
-                buffer += ' class="' + element.class.join(' ') + '"';
+            if ( element.class.length > 0 ) {
+                html += ' class="' + element.class.join( ' ' ) + '"';
             }
-            buffer += '>';
-            if(element.text != undefined) {
-                buffer += this.escape(element.text);
-            }
-            if(element.child.length > 0) {
-                buffer += '\n' + this.stringify(element.child) + indent;
-            } else if(element.text != undefined && element.text.indexOf('\n') > -1) {
-                buffer += '\n' + indent;
-            }
-            buffer += '</' + element.tag + '>\n';
-        }
-        return buffer
-            .replace('<br></br>', '<br>')
-            .replace('<hr></hr>', '<hr>')
-            .replace('</link>', '');
-    }
-    
-    this.minify = function(tree) {
-        var buffer = '';
-        
-        for(var i in tree) {
-            var element = tree[i];
-            if(element.tag == undefined) {
-                buffer += this.escape(element.text);
-                continue;    
+            if ( element.tag in HTMLmini.emptyElements ) {
+                html += '>' + newline;
+                continue;
             } else {
-                buffer += '<' + element.tag;
+                html += '>';
             }
-            if(element.id != undefined) {
-                buffer += ' id="' + element.id + '"';
+            if ( typeof element.text != 'undefined' ) {
+                html += HTMLmini.escapeHTML( element.text );
             }
-            for(attr in element.attr) {
-                buffer += ' ' + attr + (element.attr[attr].length > 0 ? ('="' + element.attr[attr] + '"') : '');
+            if ( element.child.length > 0 ) {
+                html += newline + this.stringify( element.child, tabSize, tabNum + 1 ) + indent;
+            } else if ( typeof element.text != 'undefined' && element.text.indexOf('\n') > -1 ) {
+                html += newline + indent;
             }
-            if(element.class.length > 0) {
-                buffer += ' class="' + element.class.join(' ') + '"';
-            }
-            buffer += '>';
-            if(element.text != undefined) {
-                buffer += this.escape(element.text);
-            }
-            if(element.child.length > 0) {
-                buffer += this.minify(element.child);
-            } 
-            buffer += '</' + element.tag + '>';
+            html += '</' + element.tag + '>' + newline;
         }
-        return buffer
-            .replace('<br></br>', '<br>')
-            .replace('<hr></hr>', '<hr>')
-            .replace('</link>', '');
-    }
-    
-    this.indent = function(n) {
-        var buffer = ''; 
-        while (buffer.length < n) {
-            buffer += ' '; 
-        }
-        return buffer; 
-    }
-    
-    this.escape = function(source) {
-        return source.replace(/[^0-9A-Za-z ]/g, function(c) {
-            return "&#" + c.charCodeAt(0) + ";";
-        });
-    }
-}
+        return html
+            .replace( /<!-->/g,  '<!-- ' )
+            .replace( /<\/!-->/g, ' -->' );
+    };
+};

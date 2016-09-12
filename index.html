@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
+        <!--></!-->
         <h1 class='top-bar'>HTMLmini</h1>
         <a  class='top-bar' href=''>github</a>
         <a  class='top-bar' href=''>author</a>
@@ -72,7 +73,7 @@ table
 			td.source|'p|Hello World'
 			td.source|'<p>Hello World</p>'
 		tr
-			td|Settign text with a string
+			td|Setting text with a string
 			td.source|'"All the characters!@#$%"'
 			td.source|'All the characters&#33;&#64;&#35;&#36;&#37;'
 		</textarea>
@@ -82,7 +83,9 @@ table
         </div>   
         <div id="render"></div>
         <!-- HTMLmini source -->
-        <script src="js/src/api.js"></script>
+        <script src="js/src/API.js"></script>
+        <script src="js/src/Config.js"></script>
+        <script src="js/src/Util.js"></script>
         <script src="js/src/Lexer.js"></script>
         <script src="js/src/Parser.js"></script>
         <script src="js/src/Generator.js"></script>
@@ -104,8 +107,8 @@ table
 
             code.onkeydown = function(e) {
                 if(event.which == 9 || event.keyCode == 9) {
-                    var start = this.selectionStart;
                     e.preventDefault();
+                    var start  = this.selectionStart;
                     this.value = this.value.substring(0, this.selectionStart) + '\t' + this.value.substring(this.selectionEnd);
                     this.selectionEnd = start + 1; 
                     code.oninput();
@@ -114,18 +117,17 @@ table
             code.oninput = function() {
                 if(update != code.value) {
                     try {
-                        var nodes = HTMLmini.html(code.value, true);
+                        var nodes = HTMLmini.html(code.value, {}, true);
                         render.innerHTML = '';
                         for(var i in nodes) {
                             render.appendChild(nodes[i]);
                         }
-                        html.value = HTMLmini.stringify(code.value);
+                        html.value = HTMLmini.stringify(code.value, {});
                     } catch(err) {
                         html.value = err.message;
                     }
                     update = code.value;
                 }
-
             }
             code.oninput();
         </script>

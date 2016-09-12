@@ -1,11 +1,7 @@
-/*
- * HTMLmini Lexer 
- * 
- * @auther Eric Buss
- * 
- */ 
 HTMLmini.Lexer = new function() {
-    
+    /*
+     * HTMLmini tokens.
+     */
     this.tokens = {   
         comment    : /(\n *#.*)|(# .*)/,                    
         newline    : /\n/,
@@ -18,89 +14,66 @@ HTMLmini.Lexer = new function() {
         id         : /#\w(\w|-)* */,
         class      : /\.\w(\w|-)* */,
         string     : /("([^"\\]|\\.)*")|('([^'\\]|\\.)*') */
-    }
-    
+    };    
     /*
-     * @param source
-     * @param map
-     * @return
+     * Token Object that calculates line and character numbers.
+     * 
+     * @return void
+     */
+    this.Token = function( source, lexed, name ) {
+        if ( typeof name != 'undefined') {
+            this.name   = name;
+            this.source = HTMLmini.Lexer.tokens[name].exec( lexed )[0].trim();
+        }
+        this.line   = source.split( '\n' ).length - lexed.split( '\n' ).length;
+        this.char   = source.length - lexed.length;
+    };
+    /*
+     * Lexes a string and applies a template map.
+     * 
+     * @param source            source string
+     * @param map               template map
+     * @return                  the lexed tokens
      */
     this.lex = function( source, map ) {  
-        return this.tokenize( this.template( this.preprocess( source ), map ));
-    }
-    
+        return this.tokenize( this.preprocess( source, map ) );
+    };
     /*
-     * @param source
-     * @return
+     * Expands tabs, converts all newlines to unix standard, 
+     * and replaces key with their template map value.
+     * 
+     * @param source    source string
+     * @return          preprocessed string
      */ 
-    this.preprocess = function( source ) {
-        return ('\n' + source + '\n')
-            .replace( /\t/g, '    ' )
-            .replace( /\r\n|\r|\n/g, '\n' );
-    }
-    
-    /*
-     * @param source
-     * @param map
-     * @return
-     */
-    this.template = function( source, map ) {
+    this.preprocess = function( source, map ) {
         for ( var key in map ) {
-            source  = source.replace( new RegExp( '[^\\](\\\\)*:' + key, 'g' ), function( match ) {
-                return match.replace( ':' + key, map[key] );
-            });
+            source = HTMLmini.replaceKey( source, key, map[key] );
         }
-        return source;
-    }
-    
+        return HTMLmini.expandTabs( ('\n' + source + '\n')
+            .replace( /\r\n|\r|\n/g, '\n' ) 
+        );
+    };   
     /*
-     * @param source
-     * @return 
+     * Converts a string into an array of tokens.
+     * 
+     * @throws LexerException   when provided with an unknown character sequence
+     * @param source            source string
+     * @return                  array of tokens
      */
     this.tokenize = function( source ) {
-        var LINES  = source.split( '\n' ).length;   // Total lines in source
-        var CHARS  = source.length;                 // Total characters in source
+        var lexed = source;
         var tokens = [];
-        outer : while ( source.length > 0 ) {
-            var line = LINES - source.split('\n').length;   // Current line
-            var char = CHARS - source.length;               // Current character        
+        outer : while ( lexed.length > 0 ) {    
             for ( var name in this.tokens ) {
-                if ( this.match( source, name ) ) {
-                    tokens.push({
-                        name   : name,
-                        source : this.tokens[name].exec( source )[0].trim(),
-                        line   : line,
-                        char   : char
-                    });
-                    source = source.replace( this.tokens[name], '' );
+                if ( HTMLmini.matchStart( this.tokens[name], lexed ) ) {
+                    tokens.push( new this.Token( source, lexed, name ) );
+                    lexed = lexed.replace( this.tokens[name], '' );
                     continue outer;
                 }                        
             }
-            HTMLmini.throw('Lexer', 'unknown character sequence: ' + this.hint( source ), line, char );
+            var err = new this.Token( source, lexed );
+            HTMLmini.throw('Lexer', 'unknown character sequence: ' + HTMLmini.hint( source ), err.line, err.char );
         }
         return tokens;
-    }
-    
-    /*
-     * @param source
-     * @param name
-     * @return
-     */
-    this.match = function( source, name ) {
-        var prefix = /^/.source;
-        var suffix = /(.|\s)*/.source;
-        return new RegExp( prefix + '(' + this.tokens[name].source + ')' + suffix ).test( source );
-    }
-    
-    /*
-     * Grabs a trimmed copy of the first few characters of
-     * the source to use in error messages.
-     * 
-     * @source  the source string
-     * @return  the hint 
-     */
-    this.hint = function( source ) {
-        return source.substring( 0, 10 ).trim() + '...';
-    }
-    
-}
+    };
+};
